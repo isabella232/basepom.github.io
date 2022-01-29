@@ -1,7 +1,7 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 inline-maven-plugin,org.basepom.inline.mojo,ScopeLimitingFilter,144,0,19,0,34,0,22,0,7,0
 inline-maven-plugin,org.basepom.inline.mojo,PomUtil,0,154,3,7,0,32,3,5,0,3
-inline-maven-plugin,org.basepom.inline.mojo,InlineMojo,644,0,40,0,133,0,40,0,20,0
+inline-maven-plugin,org.basepom.inline.mojo,InlineMojo,650,0,42,0,133,0,41,0,20,0
 inline-maven-plugin,org.basepom.inline.mojo,ScopeLimitingFilter.Scope,33,0,0,0,2,0,1,0,1,0
 inline-maven-plugin,org.basepom.inline.mojo,DependencyBuilder,260,0,14,0,59,0,16,0,9,0
 inline-maven-plugin,org.basepom.inline.mojo,PluginLog,215,0,2,0,56,0,11,0,10,0

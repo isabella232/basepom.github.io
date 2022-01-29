@@ -194,7 +194,7 @@ attached.<br /><b>Default value is</b>: <code>inlined</code>.<br /></td>
           
 <tr class="a">
             
-<td align="left"><code><a href="#outputFile">&lt;outputFile&gt;</a></code></td>
+<td align="left"><code><a href="#outputJarFile">&lt;outputJarFile&gt;</a></code></td>
             
 <td><code>File</code></td>
             
@@ -210,6 +210,19 @@ parameter causes the parameters
           
 <tr class="b">
             
+<td align="left"><code><a href="#outputPomFile">&lt;outputPomFile&gt;</a></code></td>
+            
+<td><code>File</code></td>
+            
+<td><code>-</code></td>
+            
+<td>The path to the output file for the new POM file. When this
+parameter is set, the created pom file will not replace the
+project's pom file.<br /></td>
+          </tr>
+          
+<tr class="a">
+            
 <td align="left"><code><a href="#pomFile">&lt;pomFile&gt;</a></code></td>
             
 <td><code>File</code></td>
@@ -219,7 +232,7 @@ parameter causes the parameters
 <td>The POM file to use.<br /><b>Default value is</b>: <code>${project.file}</code>.<br /><b>User property is</b>: <code>inline.pomFile</code>.<br /></td>
           </tr>
           
-<tr class="a">
+<tr class="b">
             
 <td align="left"><code><a href="#quiet">&lt;quiet&gt;</a></code></td>
             
@@ -228,6 +241,30 @@ parameter causes the parameters
 <td><code>-</code></td>
             
 <td>Silence all non-output and non-error messages.<br /><b>Default value is</b>: <code>false</code>.<br /><b>User property is</b>: <code>inline.quiet</code>.<br /></td>
+          </tr>
+          
+<tr class="a">
+            
+<td align="left"><code><a href="#replacePomFile">&lt;replacePomFile&gt;</a></code></td>
+            
+<td><code>boolean</code></td>
+            
+<td><code>-</code></td>
+            
+<td>If true, replace the POM file with a new version that has all
+inlined dependencies removed. It is possible to write a POM file
+that works to build the jar with inlined dependencies and then use
+the same POM file for the resulting artifact (by having all
+dependencies marked as 
+
+<div>
+<pre>
+provided
+</pre></div>
+
+and ensure that those dependencies do not have additional,
+transitive dependencies. This tends to be error prone and it is
+recommended to have the plugin rewrite the POM file.<br /><b>Default value is</b>: <code>true</code>.<br /><b>User property is</b>: <code>inline.replacePomFile</code>.<br /></td>
           </tr>
           
 <tr class="b">
@@ -270,29 +307,6 @@ with the inlined artifact.<br /><b>Default value is</b>: <code>true</code>.<br /
           </tr>
           
 <tr class="b">
-            
-<td align="left"><code><a href="#rewritePomFile">&lt;rewritePomFile&gt;</a></code></td>
-            
-<td><code>boolean</code></td>
-            
-<td><code>-</code></td>
-            
-<td>If true, rewrite the POM file. It is possible to write a POM file
-that works to build the jar with inlined dependencies and then use
-the same POM file for the resulting artifact (by having all
-dependencies marked as 
-
-<div>
-<pre>
-provided
-</pre></div>
-
-and ensure that those dependencies do not have additional,
-transitive dependencies. This tends to be error prone and it is
-recommended to have the plugin rewrite the POM file.<br /><b>Default value is</b>: <code>true</code>.<br /><b>User property is</b>: <code>inline.rewritePomFile</code>.<br /></td>
-          </tr>
-          
-<tr class="a">
             
 <td align="left"><code><a href="#skip">&lt;skip&gt;</a></code></td>
             
@@ -372,7 +386,7 @@ attached.</div>
           
 <li><b>Default</b>: <code>${project.build.directory}</code></li>
         </ul><hr /></section><section>
-<h4><a name="a.3CoutputFile.3E"></a><b><a name="outputFile">&lt;outputFile&gt;</a></b></h4>
+<h4><a name="a.3CoutputJarFile.3E"></a><b><a name="outputJarFile">&lt;outputJarFile&gt;</a></b></h4>
         
 <div>The path to the output file for the inlined artifact. When this
 parameter is set, the created archive will neither replace the
@@ -380,6 +394,18 @@ project's main artifact nor will it be attached. Hence, this
 parameter causes the parameters
 <code>inlinedArtifactAttached</code>,
 <code>inlinedClassifierName</code> to be ignored when used.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <code>java.io.File</code></li>
+          
+<li><b>Required</b>: <code>No</code></li>
+        </ul><hr /></section><section>
+<h4><a name="a.3CoutputPomFile.3E"></a><b><a name="outputPomFile">&lt;outputPomFile&gt;</a></b></h4>
+        
+<div>The path to the output file for the new POM file. When this
+parameter is set, the created pom file will not replace the
+project's pom file.</div>
         
 <ul>
           
@@ -429,6 +455,33 @@ this prefix.</div>
           
 <li><b>Default</b>: <code>false</code></li>
         </ul><hr /></section><section>
+<h4><a name="a.3CreplacePomFile.3E"></a><b><a name="replacePomFile">&lt;replacePomFile&gt;</a></b></h4>
+        
+<div>If true, replace the POM file with a new version that has all
+inlined dependencies removed. It is possible to write a POM file
+that works to build the jar with inlined dependencies and then use
+the same POM file for the resulting artifact (by having all
+dependencies marked as 
+
+<div>
+<pre>
+provided
+</pre></div>
+
+and ensure that those dependencies do not have additional,
+transitive dependencies. This tends to be error prone and it is
+recommended to have the plugin rewrite the POM file.</div>
+        
+<ul>
+          
+<li><b>Type</b>: <code>boolean</code></li>
+          
+<li><b>Required</b>: <code>No</code></li>
+          
+<li><b>User Property</b>: <code>inline.replacePomFile</code></li>
+          
+<li><b>Default</b>: <code>true</code></li>
+        </ul><hr /></section><section>
 <h4><a name="a.3CrequireOptional.3E"></a><b><a name="requireOptional">&lt;requireOptional&gt;</a></b></h4>
         
 <div>If true, require the dependencies to inline to be defined as 
@@ -471,32 +524,6 @@ with the inlined artifact.</div>
 <li><b>Required</b>: <code>No</code></li>
           
 <li><b>User Property</b>: <code>inline.requireProvided</code></li>
-          
-<li><b>Default</b>: <code>true</code></li>
-        </ul><hr /></section><section>
-<h4><a name="a.3CrewritePomFile.3E"></a><b><a name="rewritePomFile">&lt;rewritePomFile&gt;</a></b></h4>
-        
-<div>If true, rewrite the POM file. It is possible to write a POM file
-that works to build the jar with inlined dependencies and then use
-the same POM file for the resulting artifact (by having all
-dependencies marked as 
-
-<div>
-<pre>
-provided
-</pre></div>
-
-and ensure that those dependencies do not have additional,
-transitive dependencies. This tends to be error prone and it is
-recommended to have the plugin rewrite the POM file.</div>
-        
-<ul>
-          
-<li><b>Type</b>: <code>boolean</code></li>
-          
-<li><b>Required</b>: <code>No</code></li>
-          
-<li><b>User Property</b>: <code>inline.rewritePomFile</code></li>
           
 <li><b>Default</b>: <code>true</code></li>
         </ul><hr /></section><section>
