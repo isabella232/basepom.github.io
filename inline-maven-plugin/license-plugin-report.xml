@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<licensePluginReport goal="CHECK" timestamp="1643495756672">
-    <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="0.1-SNAPSHOT"/>
+<licensePluginReport goal="CHECK" timestamp="1644299991950">
+    <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="0.2"/>
     <files>
         <file path="pom.xml" result="PRESENT"/>
         <file path="src/it/settings.xml" result="PRESENT"/>
@@ -12,6 +12,7 @@
         <file path="src/it/test-basic/src/main/java/testjar/TestCode.java" result="PRESENT"/>
         <file path="src/it/test-basic/verify.groovy" result="PRESENT"/>
         <file path="src/it/test-jdbi/pom.xml" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/ArtifactIdentifier.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/inline/mojo/DependencyBuilder.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/inline/mojo/InlineDependency.java" result="PRESENT"/>
         <file path="src/main/java/org/basepom/inline/mojo/InlineMojo.java" result="PRESENT"/>
