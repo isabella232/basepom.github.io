@@ -450,7 +450,7 @@
 <a class="jxr_linenumber" name="L442" href="#L442">442</a>                     (inlineDependency, dependency) -&gt; {
 <a class="jxr_linenumber" name="L443" href="#L443">443</a>                         <strong class="jxr_keyword">var</strong> dependencyArtifact = dependency.getArtifact();
 <a class="jxr_linenumber" name="L444" href="#L444">444</a>                         checkState(dependencyArtifact.getFile() != <strong class="jxr_keyword">null</strong>, <span class="jxr_string">"Could not locate artifact file for %s"</span>, dependencyArtifact);
-<a class="jxr_linenumber" name="L445" href="#L445">445</a>                         classPath.addFile(dependencyArtifact.getFile(), dependencyArtifact.getGroupId(), dependencyArtifact.getArtifactId(), prefix, hideClasses);});
+<a class="jxr_linenumber" name="L445" href="#L445">445</a>                         classPath.addFile(dependencyArtifact.getFile(), prefix, dependencyArtifact.getGroupId(), dependencyArtifact.getArtifactId(), hideClasses);});
 <a class="jxr_linenumber" name="L446" href="#L446">446</a> 
 <a class="jxr_linenumber" name="L447" href="#L447">447</a>             transformer.transform(classPath);
 <a class="jxr_linenumber" name="L448" href="#L448">448</a>         }
