@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArtifactIdentifier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">inline-maven-plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.inline.mojo</a> &gt; <span class="el_source">ArtifactIdentifier.java</span></div><h1>ArtifactIdentifier.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.basepom.inline.mojo;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import com.google.common.base.Splitter;
+import org.apache.maven.artifact.Artifact;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyNode;
+
+public final class ArtifactIdentifier {
+
+    private final String artifactId;
+    private final String groupId;
+
+<span class="nc" id="L33">    public ArtifactIdentifier(String artifact) {</span>
+<span class="nc" id="L34">        checkNotNull(artifact, &quot;artifact is null&quot;);</span>
+<span class="nc" id="L35">        List&lt;String&gt; elements = Splitter.on(':').trimResults().splitToList(artifact);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        checkState(elements.size() == 2, &quot;artifact format is &lt;groupId&gt;:&lt;artifactId&gt; (got %s)&quot;, artifact);</span>
+<span class="nc" id="L37">        this.groupId = elements.get(0);</span>
+<span class="nc" id="L38">        this.artifactId = elements.get(1);</span>
+<span class="nc" id="L39">    }</span>
+
+<span class="nc" id="L41">    public ArtifactIdentifier(Dependency dependency) {</span>
+<span class="nc" id="L42">        checkNotNull(dependency, &quot;dependency is null&quot;);</span>
+
+<span class="nc" id="L44">        this.groupId = dependency.getArtifact().getGroupId();</span>
+<span class="nc" id="L45">        this.artifactId = dependency.getArtifact().getArtifactId();</span>
+<span class="nc" id="L46">    }</span>
+
+<span class="nc" id="L48">    public ArtifactIdentifier(Artifact artifact) {</span>
+<span class="nc" id="L49">        this.groupId = artifact.getGroupId();</span>
+<span class="nc" id="L50">        this.artifactId = artifact.getArtifactId();</span>
+<span class="nc" id="L51">    }</span>
+
+<span class="nc" id="L53">    public ArtifactIdentifier(DependencyNode dependencyNode) {</span>
+<span class="nc" id="L54">        checkNotNull(dependencyNode, &quot;dependencyNode is null&quot;);</span>
+
+<span class="nc" id="L56">        this.groupId = dependencyNode.getArtifact().getGroupId();</span>
+<span class="nc" id="L57">        this.artifactId = dependencyNode.getArtifact().getArtifactId();</span>
+<span class="nc" id="L58">    }</span>
+
+    public String getArtifactId() {
+<span class="nc" id="L61">        return artifactId;</span>
+    }
+
+    public String getGroupId() {
+<span class="nc" id="L65">        return groupId;</span>
+    }
+
+    public boolean matchDependency(Dependency dependency) {
+<span class="nc" id="L69">        return Optional.ofNullable(dependency)</span>
+<span class="nc" id="L70">                .map(Dependency::getArtifact)</span>
+<span class="nc" id="L71">                .map(a -&gt; match(a.getGroupId(), a.getArtifactId()))</span>
+<span class="nc" id="L72">                .orElse(false);</span>
+    }
+
+    public boolean matchArtifact(Artifact artifact) {
+<span class="nc" id="L76">        return Optional.of(artifact)</span>
+<span class="nc" id="L77">                .map(a -&gt; match(a.getGroupId(), a.getArtifactId()))</span>
+<span class="nc" id="L78">                .orElse(false);</span>
+    }
+
+    private boolean match(String groupId, String artifactId) {
+<span class="nc bnc" id="L82" title="All 4 branches missed.">        return (getArtifactId().equals(&quot;*&quot;) || getArtifactId().equals(artifactId))</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">                &amp;&amp; (getGroupId().equals(&quot;*&quot;) || getGroupId().equals(groupId));</span>
+    }
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (this == o) {</span>
+<span class="nc" id="L89">            return true;</span>
+        }
+<span class="nc bnc" id="L91" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L92">            return false;</span>
+        }
+<span class="nc" id="L94">        ArtifactIdentifier that = (ArtifactIdentifier) o;</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">        return artifactId.equals(that.artifactId) &amp;&amp; groupId.equals(that.groupId);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L100">        return Objects.hash(artifactId, groupId);</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L105">        return String.format(&quot;%s:%s&quot;, groupId, artifactId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
