@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DependencyBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">inline-maven-plugin</a> &gt; <a href="index.source.html" class="el_package">org.basepom.inline.mojo</a> &gt; <span class="el_source">DependencyBuilder.java</span></div><h1>DependencyBuilder.java</h1><pre class="source lang-java linenums">/*
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.basepom.inline.mojo;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
+import java.util.List;
+import java.util.Objects;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.apache.maven.RepositoryUtils;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.DefaultDependencyResolutionRequest;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
+import org.apache.maven.project.DependencyResolutionException;
+import org.apache.maven.project.DependencyResolutionRequest;
+import org.apache.maven.project.DependencyResolutionResult;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyFilter;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.transfer.ArtifactTransferException;
+import org.eclipse.aether.transfer.NoRepositoryLayoutException;
+import org.eclipse.aether.util.artifact.JavaScopes;
+
+/**
+ * Builds a map of dependencies required by a specific project or another dependency.
+ */
+final class DependencyBuilder {
+
+<span class="nc" id="L52">    private static final PluginLog LOG = new PluginLog(DependencyBuilder.class);</span>
+
+    private final MavenProject rootProject;
+    private final MavenSession mavenSession;
+    private final ProjectBuilder projectBuilder;
+    private final ProjectDependenciesResolver projectDependenciesResolver;
+    private final List&lt;MavenProject&gt; reactorProjects;
+
+    DependencyBuilder(MavenProject rootProject, MavenSession mavenSession, ProjectBuilder projectBuilder,
+<span class="nc" id="L61">            ProjectDependenciesResolver projectDependenciesResolver, List&lt;MavenProject&gt; reactorProjects) {</span>
+<span class="nc" id="L62">        this.rootProject = rootProject;</span>
+<span class="nc" id="L63">        this.mavenSession = mavenSession;</span>
+<span class="nc" id="L64">        this.projectBuilder = projectBuilder;</span>
+<span class="nc" id="L65">        this.projectDependenciesResolver = projectDependenciesResolver;</span>
+<span class="nc" id="L66">        this.reactorProjects = ImmutableList.copyOf(reactorProjects);</span>
+<span class="nc" id="L67">    }</span>
+
+    /**
+     * Create a map of dependencies for a given dependency node (representing an element on the dependency tree).
+     *
+     * @param dependency         The dependency node to use.
+     * @param projectScopeFilter A scope limiting filter to mask out dependencies out of scope.
+     * @return A map of dependencies for this given dependency node.
+     * @throws DependencyResolutionException Dependency resolution failed.
+     * @throws ProjectBuildingException      Maven project could not be built.
+     */
+    ImmutableList&lt;Dependency&gt; mapDependency(final Dependency dependency,
+            final DependencyFilter projectScopeFilter)
+            throws DependencyResolutionException, ProjectBuildingException {
+<span class="nc" id="L81">        checkNotNull(dependency, &quot;dependency is null&quot;);</span>
+
+        // build the project
+<span class="nc" id="L84">        final ProjectBuildingResult result = projectBuilder.build(convertFromAetherDependency(dependency), false, createProjectBuildingRequest());</span>
+
+        // now resolve the project representing the dependency.
+<span class="nc" id="L87">        final MavenProject project = result.getProject();</span>
+<span class="nc" id="L88">        return mapProject(project, projectScopeFilter);</span>
+    }
+
+    /**
+     * Create a map of names to dependencies for a given project.
+     *
+     * @param project     The current maven project.
+     * @param scopeFilter A scope limiting filter to mask out dependencies out of scope.
+     * @return A map of dependencies for this given dependency node.
+     * @throws DependencyResolutionException Dependency resolution failed.
+     */
+    ImmutableList&lt;Dependency&gt; mapProject(final MavenProject project,
+            final DependencyFilter scopeFilter)
+            throws DependencyResolutionException {
+<span class="nc" id="L102">        checkNotNull(project, &quot;project is null&quot;);</span>
+
+<span class="nc" id="L104">        final DependencyResolutionRequest request = new DefaultDependencyResolutionRequest();</span>
+<span class="nc" id="L105">        request.setRepositorySession(createProjectBuildingRequest().getRepositorySession());</span>
+<span class="nc" id="L106">        request.setMavenProject(project);</span>
+<span class="nc" id="L107">        request.setResolutionFilter(scopeFilter);</span>
+
+        DependencyResolutionResult result;
+
+        try {
+<span class="nc" id="L112">            result = projectDependenciesResolver.resolve(request);</span>
+<span class="nc" id="L113">        } catch (DependencyResolutionException e) {</span>
+<span class="nc" id="L114">            result = e.getResult();</span>
+            // try to resolve using the reactor projects
+<span class="nc" id="L116">            final ImmutableSet&lt;ProjectKey&gt; reactorProjects = this.reactorProjects.stream()</span>
+<span class="nc" id="L117">                    .map(ProjectKey::fromProject).collect(toImmutableSet());</span>
+
+            // resolve all dependencies that are matched by the reactor.
+<span class="nc" id="L120">            final ImmutableSet&lt;Dependency&gt; reactorDependencies = result.getUnresolvedDependencies().stream()</span>
+<span class="nc" id="L121">                    .filter(d -&gt; reactorProjects.contains(ProjectKey.fromDependency(d)))</span>
+<span class="nc" id="L122">                    .collect(toImmutableSet());</span>
+
+<span class="nc" id="L124">            result.getUnresolvedDependencies().removeAll(reactorDependencies);</span>
+<span class="nc" id="L125">            result.getResolvedDependencies().addAll(reactorDependencies);</span>
+
+            // remove all unresolved system dependencies
+<span class="nc" id="L128">            final ImmutableSet&lt;Dependency&gt; systemDependencies = result.getUnresolvedDependencies().stream()</span>
+<span class="nc" id="L129">                    .filter(d -&gt; JavaScopes.SYSTEM.equals(d.getScope()))</span>
+<span class="nc" id="L130">                    .collect(toImmutableSet());</span>
+
+<span class="nc" id="L132">            result.getUnresolvedDependencies().removeAll(systemDependencies);</span>
+<span class="nc" id="L133">            result.getResolvedDependencies().addAll(systemDependencies);</span>
+
+            // remove all unresolved optional dependencies
+<span class="nc" id="L136">            final ImmutableSet&lt;Dependency&gt; optionalDependencies = result.getUnresolvedDependencies().stream()</span>
+<span class="nc" id="L137">                    .filter(Dependency::isOptional)</span>
+<span class="nc" id="L138">                    .collect(toImmutableSet());</span>
+
+<span class="nc" id="L140">            result.getUnresolvedDependencies().removeAll(optionalDependencies);</span>
+<span class="nc" id="L141">            result.getResolvedDependencies().addAll(optionalDependencies);</span>
+
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            if (!result.getUnresolvedDependencies().isEmpty()) {</span>
+<span class="nc" id="L144">                final Throwable t = Throwables.getRootCause(e);</span>
+<span class="nc" id="L145">                RemoteRepository repository = null;</span>
+
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                if (t instanceof NoRepositoryLayoutException) {</span>
+<span class="nc" id="L148">                    repository = ((NoRepositoryLayoutException) t).getRepository();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                } else if (t instanceof ArtifactTransferException) {</span>
+<span class="nc" id="L150">                    repository = ((ArtifactTransferException) t).getRepository();</span>
+                }
+
+<span class="nc bnc" id="L153" title="All 4 branches missed.">                if (repository != null &amp;&amp; &quot;legacy&quot;.equals(repository.getContentType())) {</span>
+<span class="nc" id="L154">                    LOG.warn(&quot;Could not access a legacy repository for artifacts:  %s; Reason: %s&quot;, result.getUnresolvedDependencies(), t.getMessage());</span>
+                } else {
+<span class="nc" id="L156">                    throw e;</span>
+                }
+            }
+<span class="nc" id="L159">        }</span>
+
+<span class="nc" id="L161">        return ImmutableList.copyOf(result.getResolvedDependencies());</span>
+    }
+
+    static org.apache.maven.artifact.Artifact convertFromAetherDependency(final Dependency dependency) {
+<span class="nc" id="L165">        final var mavenArtifact = RepositoryUtils.toArtifact(convertToPomArtifact(dependency.getArtifact()));</span>
+<span class="nc" id="L166">        mavenArtifact.setScope(dependency.getScope());</span>
+<span class="nc" id="L167">        mavenArtifact.setOptional(dependency.isOptional());</span>
+
+<span class="nc" id="L169">        return mavenArtifact;</span>
+    }
+
+    private ProjectBuildingRequest createProjectBuildingRequest() {
+<span class="nc" id="L173">        DefaultProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(mavenSession.getProjectBuildingRequest());</span>
+<span class="nc" id="L174">        buildingRequest.setRemoteRepositories(rootProject.getRemoteArtifactRepositories());</span>
+<span class="nc" id="L175">        return buildingRequest;</span>
+    }
+
+
+    static Artifact convertToPomArtifact(final Artifact artifact) {
+        // pom artifact has no classifier. If this is already a pom artifact, don't touch it.
+<span class="nc bnc" id="L181" title="All 4 branches missed.">        if (artifact.getClassifier().isEmpty() &amp;&amp; &quot;pom&quot;.equals(artifact.getExtension())) {</span>
+<span class="nc" id="L182">            return artifact;</span>
+        }
+
+        // create a POM artifact.
+<span class="nc" id="L186">        return new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), &quot;pom&quot;, artifact.getVersion());</span>
+    }
+
+    private static final class ProjectKey {
+
+        private final String groupId;
+        private final String artifactId;
+        private final String version;
+
+        public static ProjectKey fromProject(final MavenProject project) {
+<span class="nc" id="L196">            checkNotNull(project, &quot;project; is null&quot;);</span>
+<span class="nc" id="L197">            return new ProjectKey(project.getGroupId(), project.getArtifactId(), project.getVersion());</span>
+        }
+
+        public static ProjectKey fromDependency(final Dependency dependency) {
+<span class="nc" id="L201">            checkNotNull(dependency, &quot;artifact; is null&quot;);</span>
+<span class="nc" id="L202">            return new ProjectKey(dependency.getArtifact().getGroupId(),</span>
+<span class="nc" id="L203">                    dependency.getArtifact().getArtifactId(),</span>
+<span class="nc" id="L204">                    dependency.getArtifact().getVersion());</span>
+        }
+
+<span class="nc" id="L207">        private ProjectKey(final String groupId, final String artifactId, final String version) {</span>
+<span class="nc" id="L208">            this.groupId = checkNotNull(groupId, &quot;groupId is null&quot;);</span>
+<span class="nc" id="L209">            this.artifactId = checkNotNull(artifactId, &quot;artifactId is null&quot;);</span>
+<span class="nc" id="L210">            this.version = checkNotNull(version, &quot;version is null&quot;);</span>
+<span class="nc" id="L211">        }</span>
+
+        @Override
+        public boolean equals(Object o) {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">            if (this == o) {</span>
+<span class="nc" id="L216">                return true;</span>
+            }
+<span class="nc bnc" id="L218" title="All 4 branches missed.">            if (o == null || getClass() != o.getClass()) {</span>
+<span class="nc" id="L219">                return false;</span>
+            }
+<span class="nc" id="L221">            ProjectKey that = (ProjectKey) o;</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">            return groupId.equals(that.groupId) &amp;&amp;</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">                    artifactId.equals(that.artifactId) &amp;&amp;</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">                    version.equals(that.version);</span>
+        }
+
+        @Override
+        public int hashCode() {
+<span class="nc" id="L229">            return Objects.hash(groupId, artifactId, version);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
