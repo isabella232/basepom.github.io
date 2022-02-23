@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<licensePluginReport goal="CHECK" timestamp="1645644057196">
+    <module artifactId="inline-maven-plugin" groupId="org.basepom.maven" version="1.0.1"/>
+    <files>
+        <file path="pom.xml" result="PRESENT"/>
+        <file path="src/it/settings.xml" result="PRESENT"/>
+        <file path="src/it/setup-it/basepom/pom.xml" result="PRESENT"/>
+        <file path="src/it/setup-it/invoker.properties" result="PRESENT"/>
+        <file path="src/it/setup-it/pom.xml" result="PRESENT"/>
+        <file path="src/it/test-basic/invoker.properties" result="PRESENT"/>
+        <file path="src/it/test-basic/pom.xml" result="PRESENT"/>
+        <file path="src/it/test-basic/src/main/java/testjar/TestCode.java" result="PRESENT"/>
+        <file path="src/it/test-basic/verify.groovy" result="PRESENT"/>
+        <file path="src/it/test-jdbi/pom.xml" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/ArtifactIdentifier.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/DependencyBuilder.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/InlineDependency.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/InlineMojo.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/PluginLog.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/PomUtil.java" result="PRESENT"/>
+        <file path="src/main/java/org/basepom/inline/mojo/ScopeLimitingFilter.java" result="PRESENT"/>
+        <file path="src/site/site.xml" result="PRESENT"/>
+        <file path="src/test/java/org/basepom/inline/mojo/TestPomUtil.java" result="PRESENT"/>
+        <file path="src/test/resources/testPom.xml" result="PRESENT"/>
+    </files>
+</licensePluginReport>
